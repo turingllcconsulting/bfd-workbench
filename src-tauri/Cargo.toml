@@ -1,0 +1,34 @@
+[package]
+name = "bfd-workbench"
+version = "1.0.0"
+description = "BFD Workbench — a local AI workbench built on the Claude CLI"
+authors = ["Adam Rowe"]
+license = "MIT"
+repository = "https://github.com/turingllcconsulting/bfd-workbench"
+edition = "2021"
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary to make the lib name
+# unique so it does not conflict with the bin name. This is a Windows-specific
+# issue: https://github.com/rust-lang/cargo/issues/8519
+name = "bfd_workbench_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+tauri-plugin-fs = "2.5.0"
+tauri-plugin-dialog = "2.7.0"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+dirs = "6.0.0"
+
+[profile.release]
+# Smaller installers, and the app is not hot-path CPU bound.
+opt-level = "s"
+lto = true
+codegen-units = 1
+strip = true

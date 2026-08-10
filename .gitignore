@@ -1,0 +1,28 @@
+# Build artifacts
+node_modules/
+dist/
+src-tauri/target/
+
+# Environment & secrets
+.env
+.env.*
+*.pem
+.token_cache.json
+
+# Local BFD state (memory lives in ~/.bfd, never in the repo)
+.bfd/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Logs & scratch
+*.log
+nohup.out
+*.bak
