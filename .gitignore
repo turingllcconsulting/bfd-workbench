@@ -1,28 +1,42 @@
 # Build artifacts
-node_modules/
-dist/
-src-tauri/target/
+workbench/src-tauri/target/
+workbench/node_modules/
+workbench/dist/
 
-# Environment & secrets
+# Environment & Secrets
 .env
-.env.*
-*.pem
 .token_cache.json
 
-# Local BFD state (memory lives in ~/.bfd, never in the repo)
-.bfd/
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
 
 # OS
 .DS_Store
 Thumbs.db
-desktop.ini
 
-# Editors
-.vscode/*
-!.vscode/extensions.json
-.idea/
+# Logs
+logs/*.log
+logs/*.json
 
-# Logs & scratch
-*.log
-nohup.out
+# App bundle (built artifact)
+workbench/BFD.app/
+
+# Built launcher bundle (setup.sh regenerates it)
+BFD.app/
+
+# Staged-swap artifacts
 *.bak
+nohup.out
+
+# Jupyter noise
+.ipynb_checkpoints/
+
+# Gitter (BFD_GITTER) plumbing — only run.sh and the plist copy are versioned;
+# the stage clone, logs, sync marker and fail counter must never enter this repo
+# (a tracked marker would dirty the tree on every sync and loop the checkpointer)
+.bfd/gitter/*
+!.bfd/gitter/run.sh
+!.bfd/gitter/com.turing.bfd-gitter.plist
