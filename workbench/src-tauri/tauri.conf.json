@@ -1,6 +1,6 @@
 {
   "productName": "BFD",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "identifier": "com.bfd.workbench",
   "build": {
     "frontendDist": "../dist",

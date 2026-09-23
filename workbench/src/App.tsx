@@ -5,7 +5,21 @@ import Editor from "@monaco-editor/react";
 import ReactMarkdown from "react-markdown";
 import GitPanel from "./GitPanel";
 import ActiveAgentsPanel from "./ActiveAgentsPanel";
+import ThemePicker from "./ThemePicker";
+import {
+  ThemePreset,
+  applyTheme,
+  isLightTheme,
+  loadActivePreset,
+  loadPresets,
+  savePresets,
+  saveActivePreset,
+} from "./theme";
 import "./App.css";
+
+// Paint the saved color preset before React's first render, so a light theme
+// never flashes the stock dark palette on the way in.
+applyTheme(loadActivePreset(loadPresets()));
 
 function CodeBlock({ children, className }: { children?: React.ReactNode; className?: string }) {
   const [copied, setCopied] = useState(false);
@@ -409,6 +423,9 @@ function App() {
   const [agentDocs, setAgentDocs] = useState("");
   const [agentCategories, setAgentCategories] = useState<AgentCategory[]>([]);
   const [showAgentPicker, setShowAgentPicker] = useState(false);
+  const [themePresets, setThemePresets] = useState<ThemePreset[]>(loadPresets);
+  const [theme, setTheme] = useState<ThemePreset>(() => loadActivePreset(loadPresets()));
+  const [showThemePicker, setShowThemePicker] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
   const terminalEndRef = useRef<HTMLDivElement>(null);
@@ -426,6 +443,16 @@ function App() {
   useEffect(() => {
     try { localStorage.setItem(MODES_STORAGE_KEY, JSON.stringify(modes)); } catch { /* storage unavailable */ }
   }, [modes]);
+
+  // Applying a preset is instant: repaint, then remember which one is live.
+  useEffect(() => {
+    applyTheme(theme);
+    saveActivePreset(theme);
+  }, [theme]);
+
+  useEffect(() => {
+    savePresets(themePresets);
+  }, [themePresets]);
 
   async function loadMemory() {
     try {
@@ -1076,6 +1103,7 @@ function App() {
           <button className="title-btn" onClick={() => activeTab >= 0 && saveFile(activeTab)} title="Save (⌘S)">💾</button>
           <button className="title-btn" onClick={() => activeTab >= 0 && refreshTab(activeTab)} title="Reload file from disk">⟳</button>
           <button className="title-btn" onClick={() => { loadMemory(); loadProjectContext(currentDir); }} title="Reload Memory">🧠</button>
+          <button className="title-btn" onClick={() => setShowThemePicker(true)} title="Color presets">C</button>
           <span className="title-bar-text" style={{ fontSize: 11, opacity: 0.6 }}>
             {selectedModel.name}
           </span>
@@ -1136,6 +1164,16 @@ function App() {
             </button>
           </div>
         </div>
+      )}
+
+      {showThemePicker && (
+        <ThemePicker
+          presets={themePresets}
+          active={theme}
+          onApply={setTheme}
+          onPresetsChange={setThemePresets}
+          onClose={() => setShowThemePicker(false)}
+        />
       )}
 
       <div className="main-content">
@@ -1221,7 +1259,7 @@ function App() {
               <ActiveAgentsPanel onOpenFile={openFile} />
             ) : (
               activeTab >= 0 && tabs[activeTab] && (
-                <Editor height="100%" language={tabs[activeTab].language} value={tabs[activeTab].content} onChange={(v) => updateTabContent(activeTab, v || "")} theme="vs-dark" options={{ minimap: { enabled: false }, fontSize: 14, lineNumbers: "on", wordWrap: "on", padding: { top: 8 }, scrollBeyondLastLine: false }} />
+                <Editor height="100%" language={tabs[activeTab].language} value={tabs[activeTab].content} onChange={(v) => updateTabContent(activeTab, v || "")} theme={isLightTheme(theme) ? "vs" : "vs-dark"} options={{ minimap: { enabled: false }, fontSize: 14, lineNumbers: "on", wordWrap: "on", padding: { top: 8 }, scrollBeyondLastLine: false, copyWithSyntaxHighlighting: false }} />
               )
             )}
           </div>
@@ -1238,7 +1276,7 @@ function App() {
       </div>
 
       <div className="status-bar">
-        <span>BFD v0.15.0 — {currentDir}</span>
+        <span>BFD v0.16.0 — {currentDir}</span>
         <span>
           {globalMemory ? "🧠" : ""}
           {projectContext ? ` 📋 ${projectName || "Project"}` : ""}

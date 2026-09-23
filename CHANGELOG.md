@@ -1,5 +1,12 @@
 # BFD Changelog
 
+## [0.16.0] - 2026-09-22
+
+### Features
+- **C** button in the title bar opens a color-preset picker. A preset is a name plus three hex values — **Primary**, **Secondary**, **Tertiary** — which map onto BFD's three background layers (main surface / sidebar + panels / title bar + terminal). **Apply** repaints the window instantly, and also saves the preset under its name; unnamed drafts apply without being saved. Presets and the active pick persist in `localStorage` (`bfd-theme-presets`, `bfd-theme-active`), and the saved preset is painted before React's first render so a light theme never flashes dark on launch
+- Foregrounds are derived, not configured: `src/theme.ts` picks white or black text **per surface** by WCAG contrast, so a light title bar on a dark window gets black text while the window keeps white. Borders, hovers and muted text are blends of each surface with its own foreground; the accent is the most colorful of the three chosen colors pushed to ≥4.5:1 against the main background (a near-neutral palette falls back to BFD's blue, so the stock "BFD Dark" preset reproduces the original window exactly). Semantic green/red/yellow keep their hue but are re-lit for the new background, and Monaco switches between `vs` and `vs-dark`
+- `App.css` panels on the secondary/tertiary layers now re-point `--text-*`, `--border` and `--bg-hover` at their own surface's vars, so existing rules keep working unchanged while their text follows the background it is drawn on. All fallbacks are the stock palette
+
 ## [0.15.0] - 2026-09-12
 
 ### Features

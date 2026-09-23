@@ -283,7 +283,7 @@ html, body, #root {
 
 .copy-btn:hover {
   background: var(--accent);
-  color: var(--bg-tertiary);
+  color: var(--accent-fg, var(--bg-tertiary));
 }
 
 .chat-input-area {
@@ -318,7 +318,7 @@ html, body, #root {
 
 .chat-send-btn {
   background: var(--accent);
-  color: var(--bg-tertiary);
+  color: var(--accent-fg, var(--bg-tertiary));
   border: none;
   border-radius: 6px;
   padding: 8px 16px;
@@ -424,7 +424,7 @@ html, body, #root {
   height: 24px;
   padding: 0 12px;
   background: var(--accent);
-  color: var(--bg-tertiary);
+  color: var(--accent-fg, var(--bg-tertiary));
   font-size: 11px;
   font-weight: 600;
 }
@@ -442,7 +442,7 @@ html, body, #root {
 
 .title-btn:hover {
   background: var(--accent);
-  color: var(--bg-tertiary);
+  color: var(--accent-fg, var(--bg-tertiary));
 }
 
 /* Streaming status line */
@@ -533,7 +533,7 @@ html, body, #root {
 
 .mode-btn.active {
   background: var(--accent);
-  color: var(--bg-tertiary);
+  color: var(--accent-fg, var(--bg-tertiary));
   font-weight: 700;
 }
 
@@ -653,3 +653,249 @@ html, body, #root {
 }
 .agent-picker-new { border-top: 1px solid var(--border); margin-top: 4px; font-weight: 600; }
 .agent-picker-new .agent-picker-kind { color: var(--accent); }
+
+/* --- Color presets (v0.16.0) --- */
+/* theme.ts writes --bg-*, --fg-on-*, --border-on-* and --hover-on-* onto
+   :root. Panels sitting on the secondary or tertiary background re-point the
+   generic --text-* / --border / --bg-hover vars at their own surface, so every
+   descendant rule keeps working while its text follows the background it is
+   actually drawn on. Fallbacks are the stock palette: nothing moves until a
+   preset is applied. */
+
+.sidebar,
+.tabs-bar,
+.mode-bar,
+.chat-input-area,
+.agent-picker,
+.bg-card,
+.agents-chip {
+  --text-primary: var(--fg-on-secondary, #cdd6f4);
+  --text-secondary: var(--fg-on-secondary-2, #a6adc8);
+  --text-muted: var(--fg-on-secondary-3, #6c7086);
+  --border: var(--border-on-secondary, #313244);
+  --bg-hover: var(--hover-on-secondary, #313244);
+  color: var(--text-primary);
+}
+
+.title-bar,
+.terminal-container,
+.mode-segment,
+.chat-input {
+  --text-primary: var(--fg-on-tertiary, #cdd6f4);
+  --text-secondary: var(--fg-on-tertiary-2, #a6adc8);
+  --text-muted: var(--fg-on-tertiary-3, #6c7086);
+  --border: var(--border-on-tertiary, #313244);
+  --bg-hover: var(--hover-on-tertiary, #313244);
+}
+
+/* Islands of the main background sitting inside a secondary panel. */
+.tab.active,
+.agents-panel {
+  --text-primary: var(--fg-on-primary, #cdd6f4);
+  --text-secondary: var(--fg-on-primary-2, #a6adc8);
+  --text-muted: var(--fg-on-primary-3, #6c7086);
+  --border: var(--border-on-primary, #313244);
+  --bg-hover: var(--hover-on-primary, #313244);
+}
+
+/* Color-preset picker (the "C" button) */
+.theme-picker {
+  width: 400px;
+}
+
+.theme-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 6px;
+}
+
+.theme-row:hover {
+  background: var(--bg-hover);
+}
+
+.theme-row.active .theme-row-name {
+  font-weight: 700;
+}
+
+.theme-row-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 13px;
+  padding: 7px 4px 7px 10px;
+  cursor: pointer;
+}
+
+.theme-row-dot {
+  width: 10px;
+  font-size: 10px;
+  color: var(--accent);
+}
+
+.theme-row-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.theme-swatches {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.theme-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+}
+
+.theme-row-apply,
+.theme-row-del {
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 11px;
+  padding: 3px 7px;
+  cursor: pointer;
+}
+
+.theme-row-apply:hover {
+  background: var(--accent);
+  color: var(--accent-fg, var(--bg-tertiary));
+}
+
+.theme-row-del {
+  margin-right: 6px;
+}
+
+.theme-row-del:hover {
+  color: var(--accent-red);
+}
+
+.theme-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--border);
+  margin-top: 6px;
+  padding: 10px 10px 6px;
+}
+
+.theme-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.theme-field-label {
+  min-width: 74px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.theme-input {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 12px;
+  padding: 6px 8px;
+  outline: none;
+}
+
+.theme-input:focus {
+  border-color: var(--accent);
+}
+
+.theme-hex.invalid {
+  border-color: var(--accent-red);
+}
+
+.theme-color {
+  width: 30px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.theme-preview {
+  display: flex;
+  gap: 6px;
+}
+
+.theme-preview-cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid;
+  border-radius: 5px;
+  padding: 8px 4px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.theme-preview-cell strong {
+  font-size: 14px;
+}
+
+.theme-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.theme-hint {
+  flex: 1;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.theme-btn {
+  background: var(--bg-hover);
+  border: none;
+  border-radius: 5px;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 12px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.theme-btn:hover:not(:disabled) {
+  color: var(--text-primary);
+}
+
+.theme-btn.primary {
+  background: var(--accent);
+  color: var(--accent-fg, var(--bg-tertiary));
+  font-weight: 700;
+}
+
+.theme-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
