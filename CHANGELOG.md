@@ -1,5 +1,14 @@
 # BFD Changelog
 
+## [0.17.0] - 2026-10-06
+
+### Features
+- Fourth group in the mode bar: **Verbosity** — **In Depth** / **Standard** / **Caveman** — alongside Memory, Interaction and Approval, with the same radio behavior, the same `localStorage` persistence (`bfd-modes`) and the same disable-while-streaming rule. Stored mode blobs written before 0.17.0 have no `verbosity` key and load as **In Depth**, so nothing changes for an existing window until the user clicks
+- **In Depth** is the default and sends nothing: BFD's base prompt already is that voice, so Normal stays byte-identical to 0.16.0. **Standard** asks for conclusion-first bullets of about a dozen words, no preamble and no closing summary. **Caveman** asks for essential information only in as few words as possible — fragments, one fact per line, a bare number or path where that is the whole answer — and explicitly forbids caveman-speak or broken grammar: it is terse professional shorthand, not a voice
+- Both non-default blocks ring-fence what the setting may not touch: the work, the tool calls and the verification are unchanged, a task is never narrowed to make the answer shorter, and failures, risks and anything that could not be done still get reported, just in fewer words
+- The verbosity block is appended **last** in `buildSystemPrompt`, after the active-file excerpt, so style guidance is the final instruction before the user's turn rather than something buried above a hundred lines of file context
+- `.mode-bar` now wraps instead of overflowing. Four groups measure ~970px and the default window is 1400px wide, so the bar is unchanged in practice; the row-gap and padding are set so an unwrapped bar is still exactly 34px tall
+
 ## [0.16.0] - 2026-09-22
 
 ### Features

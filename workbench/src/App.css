@@ -480,9 +480,13 @@ html, body, #root {
 .mode-bar {
   display: flex;
   align-items: center;
-  gap: 20px;
-  height: 34px;
-  padding: 0 12px;
+  /* Four groups fit one row at the default 1400px window. Wrapping is
+     insurance for a narrowed one; the padding keeps an unwrapped bar at the
+     same 34px it was before Verbosity was added. */
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  min-height: 26px;
+  padding: 4px 12px;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
   user-select: none;

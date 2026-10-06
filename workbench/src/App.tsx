@@ -98,14 +98,16 @@ const MODELS: ModelOption[] = [
 type MemoryMode = "standard" | "amnesia";
 type InteractionMode = "chat" | "agent";
 type ApprovalMode = "yolo" | "standard" | "caution";
+type VerbosityMode = "indepth" | "standard" | "caveman";
 
 interface Modes {
   memory: MemoryMode;
   interaction: InteractionMode;
   approval: ApprovalMode;
+  verbosity: VerbosityMode;
 }
 
-const DEFAULT_MODES: Modes = { memory: "standard", interaction: "chat", approval: "yolo" };
+const DEFAULT_MODES: Modes = { memory: "standard", interaction: "chat", approval: "yolo", verbosity: "indepth" };
 const MODES_STORAGE_KEY = "bfd-modes";
 
 function loadStoredModes(): Modes {
@@ -117,6 +119,7 @@ function loadStoredModes(): Modes {
       memory: parsed.memory === "amnesia" ? "amnesia" : "standard",
       interaction: parsed.interaction === "agent" ? "agent" : "chat",
       approval: parsed.approval === "standard" || parsed.approval === "caution" ? parsed.approval : "yolo",
+      verbosity: parsed.verbosity === "standard" || parsed.verbosity === "caveman" ? parsed.verbosity : "indepth",
     };
   } catch {
     return DEFAULT_MODES;
@@ -175,6 +178,20 @@ const APPROVAL_PROMPTS: Record<ApprovalMode, string> = {
 This mode OVERRIDES the CRITICAL RULES above wherever they conflict. Do not act immediately. For any request that involves changing state (writing or deleting files, running commands that modify anything, starting or killing processes), first reply with a short plan of what you intend to do and ask how to proceed. Only act after the user approves in a later message. Read-only work (reading files, listing directories, checking ports) is fine without asking.`,
   caution: `--- APPROVAL MODE: CAUTION ---
 This mode OVERRIDES the CRITICAL RULES above wherever they conflict. Be maximally careful. First reply with a plan and ask how to proceed. Then, before EVERY individual meaningful action — each file write, each deletion, each command execution, each process start or kill — state exactly what you are about to do and wait for explicit confirmation in a later message. One action per confirmation; never batch unapproved actions. Read-only actions are allowed, but say what you read.`,
+};
+
+// How the answer is written, never what work gets done — so every block ends
+// by ring-fencing the tool calls and the verification from the word budget.
+// "In Depth" is BFD's own voice already, so it adds nothing to the prompt.
+const VERBOSITY_PROMPTS: Record<VerbosityMode, string> = {
+  indepth: "",
+  standard: `--- VERBOSITY: STANDARD ---
+Write in bullets, not paragraphs. Lead with the conclusion, then the points that support it, one per line, each a dozen words or so. Cut preamble, restatement of the question, and any closing summary. Use prose only where a bullet genuinely cannot carry the point, and keep it to a line or two.
+This governs the writing only. Do the same work, the same tool calls and the same verification as always, and never narrow a task to make the answer shorter. Failures, risks and anything you could not do still get reported — those lines just get shorter too.`,
+  caveman: `--- VERBOSITY: CAVEMAN ---
+Essential information only, in as few words as possible. Fragments over sentences. Drop articles, hedges, pleasantries, and every word that does not change the answer. One fact per line. A number, a path or a filename is usually the entire answer — give it bare, with no sentence wrapped around it. No preamble, no restatement, no summary, no offer of further help.
+This is terse professional shorthand, not a voice: never write in caveman-speak or deliberately broken grammar.
+This governs the writing only. Do the same work, the same tool calls and the same verification as always, and never narrow a task to make the answer shorter. Failures, risks and anything you could not do still get reported — those lines just get shorter too.`,
 };
 
 const AGENT_MODE_PROMPT = `--- INTERACTION MODE: AGENT ---
@@ -519,6 +536,7 @@ function App() {
       const lines = tab.content.split("\n").slice(0, 100).join("\n");
       prompt += `\n\n--- ACTIVE FILE: ${tab.path} ---\n\`\`\`\n${lines}\n\`\`\``;
     }
+    if (m.verbosity !== "indepth") prompt += "\n\n" + VERBOSITY_PROMPTS[m.verbosity];
     return prompt;
   }
 
@@ -1140,6 +1158,17 @@ function App() {
             { key: "yolo", name: "YOLO", title: "Act immediately, never ask" },
             { key: "standard", name: "Standard", title: "Come back with a plan and ask before acting" },
             { key: "caution", name: "Caution", title: "Plan first, then confirm every meaningful action step by step" },
+          ]}
+        />
+        <ModeGroup
+          label="Verbosity"
+          disabled={isStreaming}
+          value={modes.verbosity}
+          onSelect={(k) => setModes({ ...modes, verbosity: k as VerbosityMode })}
+          options={[
+            { key: "indepth", name: "In Depth", title: "Normal: full explanation, in prose" },
+            { key: "standard", name: "Standard", title: "Succinct and bulleted, conclusion first" },
+            { key: "caveman", name: "Caveman", title: "Essential information only, in as few words as possible" },
           ]}
         />
       </div>

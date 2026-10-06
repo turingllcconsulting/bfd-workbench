@@ -20,7 +20,7 @@ read and write your local filesystem.
 | ⌨️ **Terminal** | Run shell commands without leaving the window |
 | 🌿 **Git panel** | Status, log, diff, commit, push, pull — on whatever repo you are browsing |
 | 🧠 **Memory** | A global notes file plus per-project context, injected into every conversation |
-| 🎚 **Operating modes** | Memory, Interaction, and Approval switches that change how much autonomy the model has |
+| 🎚 **Operating modes** | Memory, Interaction, Approval, and Verbosity switches that change how much autonomy the model has and how it writes |
 | 🤖 **Agent mode** | An `AGENTS.md` registry + picker for working with agent definition files, plus an **Active Agents** tab showing every agent-shaped process currently running |
 
 ## Requirements
