@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import GitPanel from "./GitPanel";
 import ActiveAgentsPanel from "./ActiveAgentsPanel";
 import ThemePicker from "./ThemePicker";
+import GoodNight from "./GoodNight";
 import {
   ThemePreset,
   applyTheme,
@@ -443,6 +444,7 @@ function App() {
   const [themePresets, setThemePresets] = useState<ThemePreset[]>(loadPresets);
   const [theme, setTheme] = useState<ThemePreset>(() => loadActivePreset(loadPresets()));
   const [showThemePicker, setShowThemePicker] = useState(false);
+  const [showGoodNight, setShowGoodNight] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
   const terminalEndRef = useRef<HTMLDivElement>(null);
@@ -723,6 +725,27 @@ function App() {
     } catch (err: any) {
       setTerminalOutput(prev => prev + `Error saving: ${err}\n`);
     }
+  }
+
+  // Good Night step 1: flush every modified tab in one pass. saveFile() works
+  // off the `tabs` snapshot it closed over, so calling it in a loop would
+  // clobber the earlier clears; this writes first and clears the flags once.
+  async function saveAllTabs(): Promise<string[]> {
+    const dirty = tabs.filter((t) => t.modified);
+    const savedPaths = new Set<string>();
+    const names: string[] = [];
+    for (const tab of dirty) {
+      try {
+        await invoke("write_file", { path: tab.path, content: tab.content });
+        savedPaths.add(tab.path);
+        names.push(tab.name);
+        setTerminalOutput(prev => prev + `Saved: ${tab.path}\n`);
+      } catch (err) {
+        setTerminalOutput(prev => prev + `Error saving ${tab.path}: ${err}\n`);
+      }
+    }
+    if (savedPaths.size) setTabs(prev => prev.map(t => (savedPaths.has(t.path) ? { ...t, modified: false } : t)));
+    return names;
   }
 
   async function openFileDialog() {
@@ -1122,6 +1145,14 @@ function App() {
           <button className="title-btn" onClick={() => activeTab >= 0 && refreshTab(activeTab)} title="Reload file from disk">⟳</button>
           <button className="title-btn" onClick={() => { loadMemory(); loadProjectContext(currentDir); }} title="Reload Memory">🧠</button>
           <button className="title-btn" onClick={() => setShowThemePicker(true)} title="Color presets">C</button>
+          <button
+            className="title-btn"
+            onClick={() => setShowGoodNight(true)}
+            disabled={isStreaming}
+            title={isStreaming ? "Wait for the current turn to finish" : "Good Night — save session context, finish outstanding gits and agent tasks"}
+          >
+            🌙 Good Night
+          </button>
           <span className="title-bar-text" style={{ fontSize: 11, opacity: 0.6 }}>
             {selectedModel.name}
           </span>
@@ -1202,6 +1233,21 @@ function App() {
           onApply={setTheme}
           onPresetsChange={setThemePresets}
           onClose={() => setShowThemePicker(false)}
+        />
+      )}
+
+      {showGoodNight && (
+        <GoodNight
+          session={{
+            cwd: currentDir,
+            model: selectedModel.name,
+            modes: `memory ${modes.memory} · interaction ${modes.interaction} · approval ${modes.approval} · verbosity ${modes.verbosity}`,
+            projectName,
+            messages,
+            tabs: tabs.map((t) => ({ name: t.name, path: t.path, modified: t.modified })),
+          }}
+          onSaveTabs={saveAllTabs}
+          onClose={() => setShowGoodNight(false)}
         />
       )}
 
@@ -1305,7 +1351,7 @@ function App() {
       </div>
 
       <div className="status-bar">
-        <span>BFD v0.16.0 — {currentDir}</span>
+        <span>BFD v0.18.0 — {currentDir}</span>
         <span>
           {globalMemory ? "🧠" : ""}
           {projectContext ? ` 📋 ${projectName || "Project"}` : ""}

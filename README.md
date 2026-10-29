@@ -26,10 +26,11 @@ read and write your local filesystem.
 ## Requirements
 
 - **macOS** (Apple Silicon or Intel). A handful of home-directory paths are
-  currently hardcoded in `workbench/src/App.tsx` and
-  `workbench/src/ActiveAgentsPanel.tsx` — adjust them to your machine. (A
-  cross-platform 1.0.0 release is preserved earlier in this repo's history;
-  its platform helpers are the donor if you want Windows/Linux support.)
+  currently hardcoded in `workbench/src/App.tsx`,
+  `workbench/src/ActiveAgentsPanel.tsx` and `workbench/src/GoodNight.tsx` —
+  adjust them to your machine. (A cross-platform 1.0.0 release is preserved
+  earlier in this repo's history; its platform helpers are the donor if you
+  want Windows/Linux support.)
 - Node.js 18+ ([nodejs.org](https://nodejs.org) or `brew install node`)
 - Rust ([rustup.rs](https://rustup.rs)) and `xcode-select --install`
 - Claude CLI: `npm install -g @anthropic-ai/claude-code`, authenticated once

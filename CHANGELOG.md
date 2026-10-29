@@ -1,5 +1,15 @@
 # BFD Changelog
 
+## [0.18.0] - 2026-10-28
+
+### Features
+- **🌙 Good Night** button in the title bar: one click closes out the day and ends with **Goodnight!**. It runs four steps in order, each with its own live log in an overlay, and reports what it could not do rather than hiding it. Disabled while a turn is streaming
+- **Save open files** — writes every modified editor tab to disk in one pass and clears the modified flags together (looping `saveFile` would have clobbered each clear with its own stale `tabs` snapshot)
+- **Finish agent tasks** — snapshots everything agent-shaped that is alive: headless `claude -p` bridges other projects' daemons spawn, other python worker processes, and `com.turing.*`/`com.rowe.*` launchd jobs holding a real pid (mid-tick, as opposed to `-` for loaded-and-idle). BFD's own `stream-json` sessions are excluded — those are windows, not tasks. Polls every 5s for up to 120s for them to finish; anything still running at the deadline is reported and **left alone, never killed**
+- **Save session context** — writes the full transcript to `<project>/.bfd/sessions/<YYYY-MM-DD_HHMM>.md` (cwd, model, mode settings, open tabs, the agent snapshot, every message), then rewrites the tail of `<project>/.bfd/context.md` below a `<!-- bfd:goodnight -->` marker: a rolling 10-entry session log and a single regenerated **Resume here** block holding the last ask and where the session left off. Everything above the marker is the user's and is never touched. The project root is found by walking up for an existing `.bfd/context.md`, the same way the Rust `find_project_context` does, so the session lands next to the context it was loaded with
+- **Finish outstanding gits** — for the session's project repo plus a short list of other known project repos, any repo that is dirty or ahead gets `add -A`, a `Good night — <date> session wrap-up` commit and a push, with an upstream retry on a first push. Each repo's changed-file list is logged before the commit so the whole thing is auditable. Three guards: a repo resolving to `$HOME` is skipped on purpose (the stray `~/.git` is never committed), a repo with more than 100 changed files is flagged for manual review instead of committed, and a repo with no `origin` is committed locally and reported as unpushed. Untracked files count toward dirty here — `git_overview` is `-uno`, so Good Night runs its own `status --porcelain`
+- No Rust changes: the whole flow is built from the existing `write_file` / `create_dir` / `file_exists` / `read_file` / `run_command` / `git_run` / `git_overview` commands, so no rebuild is needed
+
 ## [0.17.0] - 2026-10-06
 
 ### Features
